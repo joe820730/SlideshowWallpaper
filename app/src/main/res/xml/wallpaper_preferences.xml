@@ -47,6 +47,9 @@
         android:entries="@array/too_wide_images_rules"
         android:entryValues="@array/too_wide_images_rule_values"
         app:icon="@drawable/ic_wide_handling" />
+    <SwitchPreference
+        android:key="@string/preference_change_on_wakeup"
+        android:title="@string/change_on_wakeup" />
     <Preference android:title="@string/preference_preview"
         android:key="@string/preference_preview_key"
         android:summary="@string/preference_preview_summary"

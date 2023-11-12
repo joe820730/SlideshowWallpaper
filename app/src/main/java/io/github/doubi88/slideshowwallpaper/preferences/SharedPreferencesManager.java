@@ -38,6 +38,7 @@ public class SharedPreferencesManager {
     private static final String PREFERENCE_KEY_URI_LIST_RANDOM = "uri_list_random";
     private static final String PREFERENCE_KEY_SECONDS_BETWEEN = "seconds";
     private static final String PREFERENCE_KEY_TOO_WIDE_IMAGES_RULE = "too_wide_images_rule";
+    private static final String PREFERENCE_KEY_CHANGE_ON_WAKEUP = "change_on_wakeup";
 
     public enum Ordering {
         SELECTION(0, PREFERENCE_KEY_URI_LIST) {
@@ -212,6 +213,17 @@ public class SharedPreferencesManager {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(PREFERENCE_KEY_LAST_UPDATE, value);
         editor.apply();
+    }
+
+    public void setChangeOnWakeup(Boolean value) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(PREFERENCE_KEY_CHANGE_ON_WAKEUP, value);
+        editor.apply();
+    }
+
+    public Boolean getChangeOnWakeup() {
+        Boolean result = preferences.getBoolean(PREFERENCE_KEY_CHANGE_ON_WAKEUP, false);
+        return result;
     }
 
     public int getSecondsBetweenImages() throws NumberFormatException {

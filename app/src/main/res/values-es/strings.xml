@@ -33,6 +33,7 @@
     <string name="image_view_description">Imagen</string>
     <string name="settings_name">Ajustes</string>
     <string name="image_list_name">Imágenes</string>
+    <string name="change_on_wakeup">Change on WakeUp</string>
     <string name="preference_too_wide_images_rule">Mostrar</string>
     <string name="preference_preview">Previsualizar</string>
     <string name="preference_preview_summary">Previsualizar y establecer como fondo de pantalla actual.</string>

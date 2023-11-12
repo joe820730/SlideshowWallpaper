@@ -18,12 +18,18 @@
  */
 package io.github.doubi88.slideshowwallpaper;
 
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.service.wallpaper.WallpaperService;
@@ -33,6 +39,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import io.github.doubi88.slideshowwallpaper.preferences.SharedPreferencesManager;
 import io.github.doubi88.slideshowwallpaper.utilities.CompatibilityHelpers;
@@ -41,12 +48,28 @@ import io.github.doubi88.slideshowwallpaper.utilities.ImageLoader;
 
 
 public class SlideshowWallpaperService extends WallpaperService {
+    SlideshowWallpaperEngine.ScreenOnReceiver mScreenOnReceiver = null;
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override
     public Engine onCreateEngine() {
-        return new SlideshowWallpaperEngine();
+        SlideshowWallpaperEngine engine = new SlideshowWallpaperEngine();
+        if (mScreenOnReceiver != null) {
+            unregisterReceiver(mScreenOnReceiver);
+            mScreenOnReceiver = null;
+        }
+        mScreenOnReceiver = engine.GetScreenOnReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenOnReceiver, intentFilter);
+        return engine;
     }
 
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(mScreenOnReceiver);
+        mScreenOnReceiver = null;
+    }
 
     public class SlideshowWallpaperEngine extends Engine {
 
@@ -94,8 +117,8 @@ public class SlideshowWallpaperService extends WallpaperService {
             float scale = getResources().getDisplayMetrics().density;
             textSize = (int) (10f * scale + 0.5f);
             textPaint.setTextSize(textSize);
+            Log.i(SlideshowWallpaperService.class.getSimpleName(), "Queue DrawRunner from constructor");
             handler.post(drawRunner);
-
             manager = new SharedPreferencesManager(getSharedPreferences());
         }
 
@@ -140,6 +163,7 @@ public class SlideshowWallpaperService extends WallpaperService {
             super.onSurfaceChanged(holder, format, width, height);
             this.width = width;
             this.height = height;
+            Log.i(SlideshowWallpaperService.class.getSimpleName(), "Queue DrawRunner from onSurfaceChanged");
             handler.post(drawRunner);
         }
 
@@ -155,6 +179,7 @@ public class SlideshowWallpaperService extends WallpaperService {
             super.onVisibilityChanged(visible);
             this.visible = visible;
             if (visible) {
+                Log.i(SlideshowWallpaperService.class.getSimpleName(), "Queue DrawRunner from onVisibilityChanged");
                 handler.post(drawRunner);
             } else {
                 handler.removeCallbacks(drawRunner);
@@ -190,29 +215,33 @@ public class SlideshowWallpaperService extends WallpaperService {
             List<Uri> uris = manager.getImageUris(ordering);
 
             if (uris.size() > 0) {
-                int currentImageIndex = manager.getCurrentIndex();
-                if (currentImageIndex >= uris.size()) {
-                    // If an image was deleted and therefore we are over the end of the list
-                    currentImageIndex -= uris.size();
-                }
-                int nextUpdate = calculateNextUpdateInSeconds();
-                if (nextUpdate <= 0) {
-                    int delay = getDelaySeconds();
-                    while (nextUpdate <= 0) {
-                        currentImageIndex++;
-
-                        if (currentImageIndex >= uris.size()) {
-                            currentImageIndex = 0;
-                        }
-
-                        nextUpdate += delay;
+                if (!manager.getChangeOnWakeup()) {
+                    int currentImageIndex = manager.getCurrentIndex();
+                    if (currentImageIndex >= uris.size()) {
+                        // If an image was deleted and therefore we are over the end of the list
+                        currentImageIndex -= uris.size();
                     }
-                    manager.setCurrentIndex(currentImageIndex);
-                    manager.setLastUpdate(System.currentTimeMillis());
+                    int nextUpdate = calculateNextUpdateInSeconds();
+                    if (nextUpdate <= 0) {
+                        int delay = getDelaySeconds();
+                        while (nextUpdate <= 0) {
+                            currentImageIndex++;
+
+                            if (currentImageIndex >= uris.size()) {
+                                currentImageIndex = 0;
+                            }
+
+                            nextUpdate += delay;
+                        }
+                        manager.setCurrentIndex(currentImageIndex);
+                        manager.setLastUpdate(System.currentTimeMillis());
+                    }
+                    result = uris.get(currentImageIndex);
+                    currentIndex = currentImageIndex;
+                    listLength = uris.size();
+                } else {
+                    result = uris.get(currentIndex);
                 }
-                result = uris.get(currentImageIndex);
-                currentIndex = currentImageIndex;
-                listLength = uris.size();
             }
 
             return result;
@@ -287,11 +316,49 @@ public class SlideshowWallpaperService extends WallpaperService {
                 }
                 handler.removeCallbacks(drawRunner);
                 if (visible) {
-
-                    handler.postDelayed(drawRunner, calculateNextUpdateInSeconds() * 1000);
+                    if (!manager.getChangeOnWakeup()) {
+                        handler.postDelayed(drawRunner, calculateNextUpdateInSeconds() * 1000);
+                    }
                 }
             }
         }
 
+        public class ScreenOnReceiver extends BroadcastReceiver {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // Since SCREEN_ON intent happened much later that screen was already shown,
+                // change wallpaper when screen off can make user have better experience.
+                if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                    if (manager.getChangeOnWakeup()) {
+                        SharedPreferencesManager.Ordering ordering = manager.getCurrentOrdering(getResources());
+                        List<Uri> uris = manager.getImageUris(ordering);
+
+                        if (uris.size() > 0) {
+                            int currentImageIndex = manager.getCurrentIndex();
+                            if (currentImageIndex >= uris.size()) {
+                                // If an image was deleted and therefore we are over the end of the list
+                                currentImageIndex -= uris.size();
+                            }
+                            currentImageIndex++;
+                            if (currentImageIndex >= uris.size()) {
+                                currentImageIndex = 0;
+                            }
+                            manager.setCurrentIndex(currentImageIndex);
+                            currentIndex = currentImageIndex;
+                            listLength = uris.size();
+                        }
+                        if (visible) {
+                            // Extreme case that user press power key twice quickly
+                            // might cause screen not really turned off.
+                            handler.post(drawRunner);
+                        }
+                    }
+                }
+            }
+        }
+
+        public ScreenOnReceiver GetScreenOnReceiver() {
+            return new ScreenOnReceiver();
+        }
     }
 }
