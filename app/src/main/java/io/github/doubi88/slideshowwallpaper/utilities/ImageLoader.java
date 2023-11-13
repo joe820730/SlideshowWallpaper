@@ -189,6 +189,7 @@ public class ImageLoader {
     }
 
     private static int calculateSampleSize(int width, int height, int desiredWidth, int desiredHeight) {
+        Log.i("Test", String.format("w = %d, h = %d, dw = %d, dh = %d", width, height, desiredWidth, desiredHeight));
         int result = 1;
 
         if (width > desiredWidth || height > desiredHeight) {

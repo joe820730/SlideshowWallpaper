@@ -34,6 +34,8 @@
     <string name="settings_name">Einstellungen</string>
     <string name="image_list_name">Bilder</string>
     <string name="change_on_wakeup">Change on WakeUp</string>
+    <string name="static_main_wallpaper">Use static wallpaper on main screen</string>
+    <string name="main_wallpaper_uri">Main wallpaper</string>
     <string name="preference_too_wide_images_rule">Anzeige</string>
     <string name="preference_preview">Vorschau</string>
     <string name="preference_preview_summary">Vorschau starten und als aktuellen Hintergrund setzen.</string>

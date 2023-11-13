@@ -50,6 +50,17 @@
     <SwitchPreference
         android:key="@string/preference_change_on_wakeup"
         android:title="@string/change_on_wakeup" />
+    <SwitchPreference
+        android:key="@string/preference_static_main_wallpaper"
+        android:title="@string/static_main_wallpaper" />
+    <Preference
+        android:key="@string/preference_main_wallpaper_uri"
+        android:title="@string/main_wallpaper_uri"
+        app:icon="@drawable/ic_image_list">
+        <intent
+            android:targetClass="io.github.doubi88.slideshowwallpaper.preferences.SingleImageSelectorActivity"
+            android:targetPackage="io.github.doubi88.slideshowwallpaper" />
+    </Preference>
     <Preference android:title="@string/preference_preview"
         android:key="@string/preference_preview_key"
         android:summary="@string/preference_preview_summary"

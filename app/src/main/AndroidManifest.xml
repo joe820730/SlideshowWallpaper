@@ -59,6 +59,12 @@
             android:label="@string/image_list_name"
             android:theme="@style/AppTheme" >
         </activity>
+        <activity
+            android:name="io.github.doubi88.slideshowwallpaper.preferences.SingleImageSelectorActivity"
+            android:exported="false"
+            android:label="@string/main_wallpaper_uri"
+            android:theme="@style/AppTheme" >
+        </activity>
     </application>
 
 </manifest>

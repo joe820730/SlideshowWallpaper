@@ -61,6 +61,7 @@ public class SlideshowWallpaperService extends WallpaperService {
         mScreenOnReceiver = engine.GetScreenOnReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        intentFilter.addAction(Intent.ACTION_USER_PRESENT);
         registerReceiver(mScreenOnReceiver, intentFilter);
         return engine;
     }
@@ -95,6 +96,7 @@ public class SlideshowWallpaperService extends WallpaperService {
         private float deltaX;
         private float lastXOffset;
         private float lastXOffsetStep;
+        private boolean mIsUnlocked = true;
 
         private SharedPreferencesManager manager;
 
@@ -117,7 +119,6 @@ public class SlideshowWallpaperService extends WallpaperService {
             float scale = getResources().getDisplayMetrics().density;
             textSize = (int) (10f * scale + 0.5f);
             textPaint.setTextSize(textSize);
-            Log.i(SlideshowWallpaperService.class.getSimpleName(), "Queue DrawRunner from constructor");
             handler.post(drawRunner);
             manager = new SharedPreferencesManager(getSharedPreferences());
         }
@@ -192,7 +193,13 @@ public class SlideshowWallpaperService extends WallpaperService {
 
 
         private Bitmap getNextImage() throws IOException {
-            Uri uri = getNextUri();
+            Uri uri = null;
+            if (manager.getStaticMainWallpaper() && mIsUnlocked) {
+                uri = Uri.parse(manager.getMainWallpaperPath());
+            } else {
+                uri = getNextUri();
+            }
+            Log.i("Test", "uri = " + uri + ", mIsUnlocked = " + mIsUnlocked);
             if (uri != null) {
                 if (lastRenderedImage == null || !uri.equals(lastRenderedImage.getUri())) {
                     lastRenderedImage = ImageLoader.loadImage(uri, SlideshowWallpaperService.this, width, height, false);
@@ -329,6 +336,7 @@ public class SlideshowWallpaperService extends WallpaperService {
                 // Since SCREEN_ON intent happened much later that screen was already shown,
                 // change wallpaper when screen off can make user have better experience.
                 if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+                    mIsUnlocked = false;
                     if (manager.getChangeOnWakeup()) {
                         SharedPreferencesManager.Ordering ordering = manager.getCurrentOrdering(getResources());
                         List<Uri> uris = manager.getImageUris(ordering);
@@ -350,6 +358,13 @@ public class SlideshowWallpaperService extends WallpaperService {
                         if (visible) {
                             // Extreme case that user press power key twice quickly
                             // might cause screen not really turned off.
+                            handler.post(drawRunner);
+                        }
+                    }
+                } else if (intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {
+                    mIsUnlocked = true;
+                    if (manager.getStaticMainWallpaper()) {
+                        if (visible) {
                             handler.post(drawRunner);
                         }
                     }

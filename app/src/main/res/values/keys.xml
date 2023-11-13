@@ -25,6 +25,8 @@
     <string name="preference_ordering_key" translatable="false">ordering</string>
     <string name="preference_too_wide_images_rule_key" translatable="false">too_wide_images_rule</string>
     <string name="preference_change_on_wakeup" translatable="false">change_on_wakeup</string>
+    <string name="preference_static_main_wallpaper" translatable="false">static_main_wallpaper</string>
+    <string name="preference_main_wallpaper_uri" translatable="false">main_wallpaper_path</string>
     <string name="preference_preview_key" translatable="false">preview</string>
     <string-array name="ordering_values">
         <item>selection</item>

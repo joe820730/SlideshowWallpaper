@@ -39,6 +39,8 @@ public class SharedPreferencesManager {
     private static final String PREFERENCE_KEY_SECONDS_BETWEEN = "seconds";
     private static final String PREFERENCE_KEY_TOO_WIDE_IMAGES_RULE = "too_wide_images_rule";
     private static final String PREFERENCE_KEY_CHANGE_ON_WAKEUP = "change_on_wakeup";
+    private static final String PREFERENCE_KEY_STATIC_MAIN_WALLPAPER = "static_main_wallpaper";
+    private static final String PREFERENCE_KEY_MAIN_WALLPAPER_PATH = "main_wallpaper_path";
 
     public enum Ordering {
         SELECTION(0, PREFERENCE_KEY_URI_LIST) {
@@ -223,6 +225,28 @@ public class SharedPreferencesManager {
 
     public Boolean getChangeOnWakeup() {
         Boolean result = preferences.getBoolean(PREFERENCE_KEY_CHANGE_ON_WAKEUP, false);
+        return result;
+    }
+
+    public void setStaticMainWallpaper(Boolean value) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(PREFERENCE_KEY_STATIC_MAIN_WALLPAPER, value);
+        editor.apply();
+    }
+
+    public Boolean getStaticMainWallpaper() {
+        Boolean result = preferences.getBoolean(PREFERENCE_KEY_STATIC_MAIN_WALLPAPER, false);
+        return result;
+    }
+
+    public void setMainWallpaperPath(String value) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(PREFERENCE_KEY_MAIN_WALLPAPER_PATH, value);
+        editor.apply();
+    }
+
+    public String getMainWallpaperPath() {
+        String result = preferences.getString(PREFERENCE_KEY_MAIN_WALLPAPER_PATH, null);
         return result;
     }
 

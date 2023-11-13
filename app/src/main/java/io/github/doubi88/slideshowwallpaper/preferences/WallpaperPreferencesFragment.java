@@ -70,6 +70,8 @@ public class WallpaperPreferencesFragment extends PreferenceFragmentCompat {
         updateSummary(sharedPreferences, resources.getString(R.string.preference_seconds_key));
         updateSummary(sharedPreferences, resources.getString(R.string.preference_ordering_key));
         updateSummary(sharedPreferences, resources.getString(R.string.preference_change_on_wakeup));
+        updateSummary(sharedPreferences, resources.getString(R.string.preference_static_main_wallpaper));
+        updateSummary(sharedPreferences, resources.getString(R.string.preference_main_wallpaper_uri));
         updateSummary(sharedPreferences, resources.getString(R.string.preference_too_wide_images_rule_key));
     }
 
@@ -127,6 +129,10 @@ public class WallpaperPreferencesFragment extends PreferenceFragmentCompat {
             } else if (key.equals(res.getString(R.string.preference_change_on_wakeup))) {
                 boolean changeOnWakeup = sharedPreferences.getBoolean(key, false);
                 findPreference(key).setSummary(Boolean.toString(changeOnWakeup));
+            } else if (key.equals(res.getString(R.string.preference_static_main_wallpaper))) {
+                boolean staticMainWallpaper = sharedPreferences.getBoolean(key, false);
+                findPreference(key).setSummary(Boolean.toString(staticMainWallpaper));
+            } else if (key.equals(res.getString(R.string.preference_main_wallpaper_uri))) {
             }
         }
     }
