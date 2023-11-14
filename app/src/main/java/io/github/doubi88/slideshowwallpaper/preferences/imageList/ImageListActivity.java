@@ -22,6 +22,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -128,8 +129,16 @@ public class ImageListActivity extends AppCompatActivity {
             int perms = res.getPersistedUriPermissions().size();
             res.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            // If taking the permission was unsuccessful (e.g. because the limit was reached), Don't add the uri
-            if (res.getPersistedUriPermissions().size() <= perms) {
+            int perms2 = res.getPersistedUriPermissions().size();
+            // If size not increased, maybe get permission failed, or already granted.
+            // We need check it.
+            if (perms2 <= perms) {
+                List<UriPermission> permissionList = res.getPersistedUriPermissions();
+                for (UriPermission permission: permissionList) {
+                    if (uri.equals(permission.getUri())) {
+                        return true;
+                    }
+                }
                 takePermissionSuccess = false;
             }
         }
