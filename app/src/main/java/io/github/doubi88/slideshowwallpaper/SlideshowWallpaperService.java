@@ -164,7 +164,6 @@ public class SlideshowWallpaperService extends WallpaperService {
             super.onSurfaceChanged(holder, format, width, height);
             this.width = width;
             this.height = height;
-            Log.i(SlideshowWallpaperService.class.getSimpleName(), "Queue DrawRunner from onSurfaceChanged");
             handler.post(drawRunner);
         }
 
@@ -180,7 +179,6 @@ public class SlideshowWallpaperService extends WallpaperService {
             super.onVisibilityChanged(visible);
             this.visible = visible;
             if (visible) {
-                Log.i(SlideshowWallpaperService.class.getSimpleName(), "Queue DrawRunner from onVisibilityChanged");
                 handler.post(drawRunner);
             } else {
                 handler.removeCallbacks(drawRunner);
@@ -199,7 +197,6 @@ public class SlideshowWallpaperService extends WallpaperService {
             } else {
                 uri = getNextUri();
             }
-            Log.i("Test", "uri = " + uri + ", mIsUnlocked = " + mIsUnlocked);
             if (uri != null) {
                 if (lastRenderedImage == null || !uri.equals(lastRenderedImage.getUri())) {
                     lastRenderedImage = ImageLoader.loadImage(uri, SlideshowWallpaperService.this, width, height, false);
